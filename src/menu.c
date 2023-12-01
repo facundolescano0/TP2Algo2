@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "hash.h"
 #include "juego.h"
+#include <string.h>
 
 struct menu{
     hash_t *comandos;
@@ -12,13 +13,6 @@ struct informacion_comando{
     char *descripcion;
     bool (*funcion)(void *);
 };
-
-struct juego_estado{
-	juego_t *juego;
-	bool continuar;
-	menu_t *menu;
-};
-
 
 menu_t *menu_crear(){
     menu_t *menu = malloc(sizeof(menu_t));
@@ -32,21 +26,26 @@ menu_t *menu_crear(){
     return menu;
 }
 
-bool menu_agregar_comando(menu_t *menu, char *comando, char *descripcion, bool(*f)(void*)){
+void menu_agregar_comando(menu_t *menu, char *comando, char *descripcion, bool(*f)(void*)){
     if(!menu || !comando || !descripcion || !f)
-        return false;
+        return;
     struct informacion_comando *info= malloc(sizeof(struct informacion_comando));
     if(!info)
-        return false;
+        return;
     info->comando = comando;
     info->descripcion = descripcion;
     info->funcion = f;
     hash_t *insertado = hash_insertar(menu->comandos, comando, info, NULL);
     if(!insertado){
         free(info);
-        return false;
+        return;
     }
-    return true;
+}
+
+size_t menu_cantidad_comandos(menu_t *menu){
+    if(!menu)
+        return 0;
+    return hash_cantidad(menu->comandos);
 }
 
 MENU_RESULTADO menu_ejecutar_comando(menu_t *menu, char *comando, void *contexto){
@@ -60,9 +59,13 @@ MENU_RESULTADO menu_ejecutar_comando(menu_t *menu, char *comando, void *contexto
     return MENU_ERROR;
 }
 
-void destruir_menu(menu_t *menu){
+ void destructor(void *valor){
+    free(valor);
+}
+
+void menu_destruir(menu_t *menu){
     if(!menu)
         return;
-    hash_destruir(menu->comandos);
+    hash_destruir_todo(menu->comandos,destructor);
     free(menu);
 }

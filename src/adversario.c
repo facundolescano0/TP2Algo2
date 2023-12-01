@@ -5,7 +5,7 @@
 #include "pokemon.h"
 #include "ataque.h"
 #include <stdlib.h>
-#include <string.h>
+#include <string.h>	
 #include "comun.h"
 
 #define MAX_ATAQUE 20
