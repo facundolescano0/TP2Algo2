@@ -8,7 +8,8 @@
 #include "src/menu.h"
 #include <string.h>
 #include <stdlib.h>
-
+#include <time.h>
+#include <ctype.h>
 
 #define CANT_POKEMONES 3
 #define MAX_LINEA 200
@@ -79,10 +80,6 @@ JUEGO_ESTADO seleccionar_pokemones_adv(struct juego_estado *estado){
 	return TODO_OK;
 }
 
-/*
-void *lista_buscar_elemento(lista_t *lista, int (*comparador)(void *, void *),
-			    void *contexto);
-*/
 
 bool inicializar_juego(struct juego_estado *estado){
 	if(!estado)
@@ -105,6 +102,7 @@ bool cargar_archivo(void *estado){
 	if(!estado)
 		return true;
 	struct juego_estado *estado_j=estado;
+	
 	char linea[MAX_LINEA];
 	char *leido;
 	printf("Ingrese el nombre del archivo: ");
@@ -117,6 +115,7 @@ bool cargar_archivo(void *estado){
 	archivo_cargado = juego_cargar_pokemon(estado_j->juego, linea);
 	if(archivo_cargado != TODO_OK )
 		return false;
+
 	bool inicializar = inicializar_juego(estado_j);
 	if(!inicializar)
 		return false;
@@ -148,6 +147,7 @@ bool listar_pokemones(void *estado_juego){
 		return false;
 	printf("Lista de pokemones:\n");
 	lista_con_cada_elemento(estado->pokemones,mostrar_poke, NULL);
+	printf("\n");
 	return true;
 }
 
@@ -191,6 +191,28 @@ bool mostrar_ayuda3(void *contexto){
 	return true;
 }
 
+void parsear_string(char *palabra) {
+    if (palabra[0] != '\0') {
+        palabra[0] = (char)toupper( palabra[0]);
+        for (int i = 1; palabra[i] != '\0'; i++) {
+            palabra[i] = (char)tolower( palabra[i]);
+        }
+    }
+}
+
+bool parsear_pokemones(char linea[MAX_LINEA], char *nombre1,char * nombre2,char * nombre3){
+
+	int cant_leidos = sscanf(linea, "%s %s %s ", nombre1, nombre2,
+				nombre3);
+	if(cant_leidos != CANT_POKEMONES)
+		return false;
+	parsear_string(nombre1);
+	parsear_string(nombre2);
+	parsear_string(nombre3);
+	return true;
+}
+
+
 bool pedir_pokemones(void *estado_juego){
 	
 	if(!estado_juego)
@@ -199,7 +221,9 @@ bool pedir_pokemones(void *estado_juego){
 	if(lista_vacia(estado->pokemones)) 
 		return false;
 	listar_pokemones(estado);
+	printf("Ejemplo:Charmander Pikachu Larvitar\n\n");
 	printf("Elige tres pokemon de la lista:  ");
+
 	char linea[MAX_LINEA];
 	char *leido;
 	leido = fgets(linea,MAX_LINEA,stdin);
@@ -209,9 +233,10 @@ bool pedir_pokemones(void *estado_juego){
 	linea[tope-1] = 0;
 
 	char nombre1[MAX_NOMBRE], nombre2[MAX_NOMBRE], nombre3[MAX_NOMBRE];
-	int cant_leidos = sscanf(linea, "%s %s %s ", nombre1, nombre2,
-				nombre3);
-	if(cant_leidos != CANT_POKEMONES)
+
+	bool parseados = parsear_pokemones(linea, nombre1,nombre2,nombre3);
+	
+	if(!parseados)
 		return false;
 
 	JUEGO_ESTADO seleccion;
@@ -227,52 +252,62 @@ bool pedir_pokemones(void *estado_juego){
 	return true;	
 }
 
-/*
-prueba juego 
-ejemplos/correcto.txt
-Cacnea Charmander Floatzel
-}*/
+jugada_t parsear_jugada(char linea[MAX_LINEA]){
+
+	jugada_t jugada={ .ataque = "", .pokemon = "" };
+	char pokemon[MAX_NOMBRE], ataque[MAX_NOMBRE];
+	int cant_leidos = sscanf(linea, "%s %s", pokemon, ataque);
+	if(cant_leidos != CANT_JUGADA)
+		return jugada;
+	
+	parsear_string(pokemon);
+	parsear_string(ataque);	
+	
+	strcpy(jugada.pokemon,pokemon);
+	strcpy(jugada.ataque,ataque);
+	
+	return jugada;
+}
 
 bool jugar_turno(void *estado_juego){
 	if(!estado_juego)
 		return false;
 	struct juego_estado *estado = estado_juego;
-	printf("Elige un ataque de uno de tus pokemones\n");
-	printf("Por ejemplo:Charmander Furia\n>>>");
+
+	printf("\nElige un ataque de uno de tus pokemones\n");
+	printf("Por ejemplo:Charmander Furia\n\nInserte su jugada>>>");
+
 	char linea[MAX_LINEA];
 	char *leido;
 	leido = fgets(linea,MAX_LINEA,stdin);
 	if(!leido)
 		return false;
+
 	size_t tope = strlen(linea);
 	linea[tope-1] = 0;
 
-	char pokemon[MAX_NOMBRE], ataque[MAX_NOMBRE];
-	int cant_leidos = sscanf(linea, "%s %s", pokemon, ataque);
-	if(cant_leidos != CANT_JUGADA)
-		return false;
-	jugada_t jugada_jugador1;
-	strcpy(jugada_jugador1.pokemon,pokemon);
-	strcpy(jugada_jugador1.ataque,ataque);
+	jugada_t jugada_jugador1 = parsear_jugada(linea);
+
 	jugada_t jugada_jugador2 = adversario_proxima_jugada(estado->adversario);
 	resultado_jugada_t resultado =juego_jugar_turno(estado->juego, 
 						jugada_jugador1, jugada_jugador2);
-	if(resultado.jugador1 ==  ATAQUE_ERROR){
-		printf("error jugador 1\n");
+
+	if(resultado.jugador1 ==  ATAQUE_ERROR)
 		return false;
-	}
 		
-	if(resultado.jugador2 ==  ATAQUE_ERROR){
-			printf("error jugador2\n");
-			return false;			
-	}
-			
+	if(resultado.jugador2 ==  ATAQUE_ERROR)
+			return false;	
+
+	printf("jugadas: %s,%s,%s,%s\n",jugada_jugador1.pokemon,jugada_jugador1.ataque,
+						jugada_jugador2.pokemon,jugada_jugador2.ataque);
+	adversario_informar_jugada(estado->adversario, jugada_jugador1);
+
 	if(resultado.jugador1 == ATAQUE_EFECTIVO)
-		printf("El resultado de tu ataque fue EFECTIVO\n");
+		printf("El resultado de tu ataque fue EFECTIVO\n\n");
 	else if(resultado.jugador1 == ATAQUE_REGULAR)
-		printf("El resultado de tu ataque fue REGULAR\n");
+		printf("El resultado de tu ataque fue REGULAR\n\n");
 	else if(resultado.jugador1 == ATAQUE_INEFECTIVO)
-		printf("El resultado de tu ataque fue INEFECTIVO\n");
+		printf("El resultado de tu ataque fue INEFECTIVO\n\n");
 	
 
 	return true;
@@ -307,7 +342,7 @@ void mostrar_ataque(const struct ataque *ataque, void *pokemon){
 		return;
 	struct ataque* atq = (struct ataque*)ataque;
 	const char *poke = pokemon;
-	printf("%s, ataque: %s, poder: %u\n", poke, atq->nombre,atq->poder);
+	printf(">>%s, ataque: %s, poder: %u\n", poke, atq->nombre,atq->poder);
 }
 
 void mostrar_pokemones(struct juego_estado *estado){
@@ -322,12 +357,13 @@ void mostrar_pokemones(struct juego_estado *estado){
 	}
 	int puntaje1=juego_obtener_puntaje(estado->juego, JUGADOR1);
 	int puntaje2=juego_obtener_puntaje(estado->juego, JUGADOR2);
-	printf("Tu puntaje : %i, Puntaje adversario %i\n",puntaje1,puntaje2);
+	printf("Tu puntaje : %i, Puntaje adversario %i\n\n",puntaje1,puntaje2);
 
 }
 
 int main(int argc, char *argv[])
-{
+{	
+	srand((unsigned)time(NULL));
 	juego_t *juego = juego_crear();
 	menu_t *menu = menu_crear();
 	pokemon_t **poke = malloc(CANT_POKEMONES*2*sizeof(pokemon_t*));
@@ -355,11 +391,13 @@ int main(int argc, char *argv[])
 
 	while(!juego_finalizado(juego) && estado.continuar){
 		if(nivel == 0)
-			printf("Debes cargar un archivo para avanzar. escribir 'ayuda' para obtener ayuda\n");
+			printf("Debes 'cargar' un archivo para avanzar. Escribir 'ayuda' para obtener ayuda\n\n");
 		else if(nivel == 1)
-			printf("Ahora debes seleccionar tus pokemones para avanzar. escribir 'ayuda' para obtener ayuda\n");
+			printf("\nAhora debes 'elegir' tus pokemones para avanzar. Escribir 'ayuda' para obtener ayuda\n\n");
 		else{
-			printf("A jugar! realiza tus jugadas. Recuerda el formato para realizar un ataque es :Pikachu Rayo\n");
+			printf("\nA jugar! realiza tus jugadas con el comando 'jugar', recuerda que no puedes repetir ataques \n" 
+					"El formato para realizar un ataque es :Pikachu Rayo\n"
+					"Escribir 'ayuda' para obtener ayuda\n\n");
 			mostrar_pokemones(&estado);
 		}
 			

@@ -81,12 +81,13 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
 	*nombre3 = (char *)pokemon_nombre(poke3);
 	if(!(*nombre1) ||!(*nombre2) ||!(*nombre3))
 		return false;
-	return true;
+	
 	
 	adversario->recursos[0].pokemon = (pokemon_t *)poke1;
 	adversario->recursos[1].pokemon = (pokemon_t *)poke2;
 	adversario->jugador1[2].pokemon = (pokemon_t *)poke3;
 
+	return true;
 }
 
 bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
@@ -106,9 +107,10 @@ bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
 		return false;
 	}
 	for(int i=0; i<MAX_POKEMONES; i++){
-		adversario->jugador1[i].pokemon = pokemones[i];	
 		if(i==OPONENTE)	
 			adversario->recursos[i].pokemon = pokemones[i];
+		else
+			adversario->jugador1[i].pokemon = pokemones[i];	
 	}
 	
 	free(pokemones);
@@ -136,17 +138,15 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 	if(!adversario)
 		return jugada;
 
-	bool jugada_lista =false;
 	struct iterar_ataques *iteradora = malloc(sizeof(struct iterar_ataques));
 	iteradora->jugada = jugada;
 	iteradora->jugada_lista = false;
 
-	for(int i=0; i<MAX_POKEMONES && !jugada_lista; i++){
+	for(int i=0; i<MAX_POKEMONES; i++){
 		iteradora->recurso_actual = &adversario->recursos[i];
-		con_cada_ataque(adversario->recursos[i].pokemon,
+		con_cada_ataque(iteradora->recurso_actual->pokemon,
 		    cargar_jugada, iteradora);
 		if(iteradora->jugada_lista){
-			jugada_lista = true;
 			adversario->ultimo_ataque.pos_recurso = i;
 			strcpy(adversario->ultimo_ataque.ataque, iteradora->jugada.ataque);
 			strcpy(jugada.ataque,iteradora->jugada.ataque);
@@ -164,9 +164,9 @@ void adversario_informar_jugada(adversario_t *adversario, jugada_t jugada)
 {
 	if(!adversario)
 		return;
-
-	struct ataque_cargar ataque_cargar = verificar_jugada(adversario->recursos,jugada);
-	if(!ataque_cargar.ataque)
+	
+	struct ataque_cargar ataque_cargar = verificar_jugada(adversario->jugador1,jugada);
+	if(!ataque_cargar.ataque || !ataque_cargar.ataques_usados)
 		return;
 
 	const struct ataque *ataque = ataque_cargar.ataque;

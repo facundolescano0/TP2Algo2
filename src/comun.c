@@ -8,6 +8,7 @@
 #include "hash.h"
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 int comparador_nombres(void *pokemon, void *nombre){
 	pokemon_t *poke = (pokemon_t *) pokemon;
@@ -38,11 +39,10 @@ bool seleccionar_pokemones(lista_t *lista_poke, const char *nombre1,
 struct ataque_cargar verificar_jugada(struct recursos recursos[MAX_POKEMONES], jugada_t jugada)
 {
 	bool ataque_disponible=false;
-	const struct ataque *ataque;
-	hash_t *usados_poke;
-    for(int i=0;i<MAX_POKEMONES;i++){
-        if(strcmp(pokemon_nombre(recursos[i].pokemon), jugada.pokemon)==0
-                                && !ataque_disponible){
+	const struct ataque *ataque=NULL;
+	hash_t *usados_poke=NULL;
+    for(int i=0;i<MAX_POKEMONES && !ataque_disponible;i++){
+        if(strcmp(pokemon_nombre(recursos[i].pokemon), jugada.pokemon)==0){
             ataque = pokemon_buscar_ataque(recursos[i].pokemon, jugada.ataque);
             if(ataque){
                 usados_poke = recursos[i].ataques_usados;
@@ -55,8 +55,11 @@ struct ataque_cargar verificar_jugada(struct recursos recursos[MAX_POKEMONES], j
 	struct ataque_cargar ataque_cargar;
 	ataque_cargar.ataques_usados = NULL;
 	ataque_cargar.ataque = NULL;
-	if(!ataque_disponible)
+	if(!ataque_disponible){
+		printf("ataque no disp en verificar\n");
 		return ataque_cargar;
+	}
+		
 	ataque_cargar.ataques_usados = usados_poke;
 	ataque_cargar.ataque = ataque;
 	return ataque_cargar;
