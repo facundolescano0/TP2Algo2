@@ -166,7 +166,7 @@ informacion_pokemon_t *pokemon_cargar_archivo(const char *path)
 	char linea[MAX_LINEA];
 	int contador_lineas = 0;
 	informacion_pokemon_t *info = calloc(1, sizeof(informacion_pokemon_t));
-	if(!info){
+	if (!info) {
 		fclose(archivo);
 		return NULL;
 	}

@@ -5,23 +5,23 @@
 #include "pokemon.h"
 #include "ataque.h"
 #include <stdlib.h>
-#include <string.h>	
+#include <string.h>
 #include "comun.h"
 
 #define MAX_ATAQUE 20
 
-struct ultimo_ataque{
+struct ultimo_ataque {
 	int pos_recurso;
 	char ataque[MAX_ATAQUE];
 };
 
-struct iterar_ataques{
+struct iterar_ataques {
 	struct recursos *recurso_actual;
 	jugada_t jugada;
 	bool jugada_lista;
 };
 
-struct adversario{
+struct adversario {
 	JUGADOR jugador;
 	lista_t *lista_poke;
 	struct recursos recursos[MAX_POKEMONES];
@@ -29,60 +29,60 @@ struct adversario{
 	struct ultimo_ataque ultimo_ataque;
 };
 
-
 adversario_t *adversario_crear(lista_t *pokemon)
 {
-	if(!pokemon)
+	if (!pokemon)
 		return NULL;
-	adversario_t *adversario = calloc(1,sizeof(adversario_t));
+	adversario_t *adversario = calloc(1, sizeof(adversario_t));
 	adversario->jugador = JUGADOR2;
 	bool fallo = false;
-	for(int i=0;i<MAX_POKEMONES;i++){
+	for (int i = 0; i < MAX_POKEMONES; i++) {
 		adversario->recursos[i].ataques_usados = hash_crear(3);
 		adversario->jugador1[i].ataques_usados = hash_crear(3);
-		if(!adversario->recursos[i].ataques_usados ||
-				!adversario->jugador1[i].ataques_usados)
+		if (!adversario->recursos[i].ataques_usados ||
+		    !adversario->jugador1[i].ataques_usados)
 			fallo = true;
 	}
-	if(fallo){
-		for(int i=0;i<MAX_POKEMONES;i++){
-		hash_destruir(adversario->recursos[i].ataques_usados);
-		hash_destruir(adversario->jugador1[i].ataques_usados);
+	if (fallo) {
+		for (int i = 0; i < MAX_POKEMONES; i++) {
+			hash_destruir(adversario->recursos[i].ataques_usados);
+			hash_destruir(adversario->jugador1[i].ataques_usados);
 		}
 		free(adversario);
 		return NULL;
 	}
 	adversario->lista_poke = pokemon;
 	return adversario;
-		
 }
 
 bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
 				    char **nombre2, char **nombre3)
 {
-	if(!adversario || !nombre1|| !nombre2|| !nombre3)
+	if (!adversario || !nombre1 || !nombre2 || !nombre3)
 		return false;
 	lista_t *lista_poke = adversario->lista_poke;
 	int tope = (int)lista_tamanio(lista_poke);
-	
-	int aleatorio1 = rand() % tope+0;
-	int aleatorio2 = rand() % tope+0;
-	int aleatorio3 = rand() % tope+0;
-	while(aleatorio1 == aleatorio2)
-		aleatorio2 = rand() % tope+0;
-	while(aleatorio3 == aleatorio1 || aleatorio3 == aleatorio2)
-		aleatorio3 = rand() % tope+0;
 
-	pokemon_t *poke1 = lista_elemento_en_posicion(lista_poke,(size_t)aleatorio1);
-	pokemon_t *poke2 = lista_elemento_en_posicion(lista_poke,(size_t)aleatorio2);
-	pokemon_t *poke3 = lista_elemento_en_posicion(lista_poke,(size_t)aleatorio3);
+	int aleatorio1 = rand() % tope + 0;
+	int aleatorio2 = rand() % tope + 0;
+	int aleatorio3 = rand() % tope + 0;
+	while (aleatorio1 == aleatorio2)
+		aleatorio2 = rand() % tope + 0;
+	while (aleatorio3 == aleatorio1 || aleatorio3 == aleatorio2)
+		aleatorio3 = rand() % tope + 0;
+
+	pokemon_t *poke1 =
+		lista_elemento_en_posicion(lista_poke, (size_t)aleatorio1);
+	pokemon_t *poke2 =
+		lista_elemento_en_posicion(lista_poke, (size_t)aleatorio2);
+	pokemon_t *poke3 =
+		lista_elemento_en_posicion(lista_poke, (size_t)aleatorio3);
 	*nombre1 = (char *)pokemon_nombre(poke1);
 	*nombre2 = (char *)pokemon_nombre(poke2);
 	*nombre3 = (char *)pokemon_nombre(poke3);
-	if(!(*nombre1) ||!(*nombre2) ||!(*nombre3))
+	if (!(*nombre1) || !(*nombre2) || !(*nombre3))
 		return false;
-	
-	
+
 	adversario->recursos[0].pokemon = (pokemon_t *)poke1;
 	adversario->recursos[1].pokemon = (pokemon_t *)poke2;
 	adversario->jugador1[2].pokemon = (pokemon_t *)poke3;
@@ -93,41 +93,42 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
 bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
 				     char *nombre2, char *nombre3)
 {
-	if(!adversario || !nombre1 || !nombre2 || !nombre3)
+	if (!adversario || !nombre1 || !nombre2 || !nombre3)
 		return false;
-	if(strcmp(nombre1,nombre2)==0 || strcmp(nombre1,nombre3)==0 || 
-						strcmp(nombre2,nombre3)==0)
+	if (strcmp(nombre1, nombre2) == 0 || strcmp(nombre1, nombre3) == 0 ||
+	    strcmp(nombre2, nombre3) == 0)
 		return false;
 
-	pokemon_t ** pokemones=malloc(3*sizeof(pokemon_t*));
+	pokemon_t **pokemones = malloc(3 * sizeof(pokemon_t *));
 	bool existen = seleccionar_pokemones(adversario->lista_poke, nombre1,
-				     nombre2, nombre3,pokemones);
-	if(!existen){
+					     nombre2, nombre3, pokemones);
+	if (!existen) {
 		free(pokemones);
 		return false;
 	}
-	for(int i=0; i<MAX_POKEMONES; i++){
-		if(i==OPONENTE)	
+	for (int i = 0; i < MAX_POKEMONES; i++) {
+		if (i == OPONENTE)
 			adversario->recursos[i].pokemon = pokemones[i];
 		else
-			adversario->jugador1[i].pokemon = pokemones[i];	
+			adversario->jugador1[i].pokemon = pokemones[i];
 	}
-	
+
 	free(pokemones);
 	return true;
 }
 
-
-void cargar_jugada(const struct ataque *ataque, void *iteradora){
-	struct iterar_ataques *herramientas = (struct iterar_ataques *)iteradora;
-	struct ataque *ataque_actual =(struct ataque*)ataque;
-	if(herramientas->jugada_lista)
+void cargar_jugada(const struct ataque *ataque, void *iteradora)
+{
+	struct iterar_ataques *herramientas =
+		(struct iterar_ataques *)iteradora;
+	struct ataque *ataque_actual = (struct ataque *)ataque;
+	if (herramientas->jugada_lista)
 		return;
 	hash_t *ataques_usados = herramientas->recurso_actual->ataques_usados;
-	if(!hash_contiene(ataques_usados, ataque_actual->nombre)){
-		strcpy(herramientas->jugada.ataque,ataque_actual->nombre);
-		strcpy(herramientas->jugada.pokemon,pokemon_nombre
-					(herramientas->recurso_actual->pokemon));
+	if (!hash_contiene(ataques_usados, ataque_actual->nombre)) {
+		strcpy(herramientas->jugada.ataque, ataque_actual->nombre);
+		strcpy(herramientas->jugada.pokemon,
+		       pokemon_nombre(herramientas->recurso_actual->pokemon));
 		herramientas->jugada_lista = true;
 	}
 }
@@ -135,22 +136,24 @@ void cargar_jugada(const struct ataque *ataque, void *iteradora){
 jugada_t adversario_proxima_jugada(adversario_t *adversario)
 {
 	jugada_t jugada = { .ataque = "", .pokemon = "" };
-	if(!adversario)
+	if (!adversario)
 		return jugada;
 
-	struct iterar_ataques *iteradora = malloc(sizeof(struct iterar_ataques));
+	struct iterar_ataques *iteradora =
+		malloc(sizeof(struct iterar_ataques));
 	iteradora->jugada = jugada;
 	iteradora->jugada_lista = false;
 
-	for(int i=0; i<MAX_POKEMONES; i++){
+	for (int i = 0; i < MAX_POKEMONES; i++) {
 		iteradora->recurso_actual = &adversario->recursos[i];
 		con_cada_ataque(iteradora->recurso_actual->pokemon,
-		    cargar_jugada, iteradora);
-		if(iteradora->jugada_lista){
+				cargar_jugada, iteradora);
+		if (iteradora->jugada_lista) {
 			adversario->ultimo_ataque.pos_recurso = i;
-			strcpy(adversario->ultimo_ataque.ataque, iteradora->jugada.ataque);
-			strcpy(jugada.ataque,iteradora->jugada.ataque);
-			strcpy(jugada.pokemon,iteradora->jugada.pokemon);
+			strcpy(adversario->ultimo_ataque.ataque,
+			       iteradora->jugada.ataque);
+			strcpy(jugada.ataque, iteradora->jugada.ataque);
+			strcpy(jugada.pokemon, iteradora->jugada.pokemon);
 			free(iteradora);
 			return jugada;
 		}
@@ -159,14 +162,14 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 	return jugada;
 }
 
-
 void adversario_informar_jugada(adversario_t *adversario, jugada_t jugada)
 {
-	if(!adversario)
+	if (!adversario)
 		return;
-	
-	struct ataque_cargar ataque_cargar = verificar_jugada(adversario->jugador1,jugada);
-	if(!ataque_cargar.ataque || !ataque_cargar.ataques_usados)
+
+	struct ataque_cargar ataque_cargar =
+		verificar_jugada(adversario->jugador1, jugada);
+	if (!ataque_cargar.ataque || !ataque_cargar.ataques_usados)
 		return;
 
 	const struct ataque *ataque = ataque_cargar.ataque;
@@ -178,14 +181,13 @@ void adversario_informar_jugada(adversario_t *adversario, jugada_t jugada)
 	strcpy(ultimo_ataque, adversario->ultimo_ataque.ataque);
 	hash_insertar(usados_adv, ultimo_ataque, NULL, NULL);
 	hash_insertar(usados_usuario, ataque->nombre, NULL, NULL);
-
 }
 
 void adversario_destruir(adversario_t *adversario)
 {
-	if(!adversario)
+	if (!adversario)
 		return;
-	for(int i = 0; i < MAX_POKEMONES;i++){
+	for (int i = 0; i < MAX_POKEMONES; i++) {
 		hash_destruir(adversario->recursos[i].ataques_usados);
 		hash_destruir(adversario->jugador1[i].ataques_usados);
 	}
