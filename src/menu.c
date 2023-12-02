@@ -54,9 +54,20 @@ MENU_RESULTADO menu_ejecutar_comando(menu_t *menu, char *comando, void *contexto
     struct informacion_comando *info= hash_obtener(menu->comandos, comando);
     if(!info)
         return MENU_INEXISTENTE;
+    if(strcmp(comando, "cargar")==0 || strcmp(comando, "elegir")==0)
+        if(info->funcion(contexto))
+            return MENU_AVANZAR;
     if(info->funcion(contexto))
         return MENU_OK;
     return MENU_ERROR;
+}
+
+void menu_quitar_comando(menu_t *menu, char *comando){
+    if(!menu || !comando)
+        return;
+    void *elemento = hash_obtener(menu->comandos,comando);
+    free(elemento);
+    hash_quitar(menu->comandos,comando);
 }
 
  void destructor(void *valor){

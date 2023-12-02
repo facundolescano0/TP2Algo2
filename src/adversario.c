@@ -149,7 +149,8 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 			jugada_lista = true;
 			adversario->ultimo_ataque.pos_recurso = i;
 			strcpy(adversario->ultimo_ataque.ataque, iteradora->jugada.ataque);
-			jugada = iteradora->jugada;
+			strcpy(jugada.ataque,iteradora->jugada.ataque);
+			strcpy(jugada.pokemon,iteradora->jugada.pokemon);
 			free(iteradora);
 			return jugada;
 		}
