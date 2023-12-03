@@ -494,7 +494,7 @@ int main(int argc, char *argv[])
 			printf("Debes 'cargar' un archivo para avanzar. Escribir 'ayuda' para obtener ayuda\n\n");
 		else if (nivel == 1)
 			printf("\nAhora debes 'elegir' tus pokemones para avanzar. Escribir 'ayuda' para obtener ayuda\n"
-						"Observacion: no puedes elegir dos veces el mismo poke!\n\n");
+			       "Observacion: no puedes elegir dos veces el mismo poke!\n\n");
 		else {
 			printf("\nA jugar! realiza tus jugadas con el comando 'jugar', recuerda que no puedes repetir ataques \n"
 			       "El formato para realizar un ataque es:Pikachu Rayo\n"
