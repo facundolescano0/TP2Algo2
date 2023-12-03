@@ -56,7 +56,7 @@ size_t menu_cantidad_comandos(menu_t *menu)
 MENU_RESULTADO menu_ejecutar_comando(menu_t *menu, char *comando,
 				     void *contexto)
 {
-	if (!menu || !comando || !contexto)
+	if (!menu || !comando)
 		return MENU_ERROR;
 	struct informacion_comando *info =
 		hash_obtener(menu->comandos, comando);

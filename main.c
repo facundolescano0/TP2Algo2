@@ -54,6 +54,8 @@ void guardar_pokemones(struct info_juego *info, char *nombre1, char *nombre2,
 					 compara_nombres, nombre2);
 	pokes[2] = lista_buscar_elemento(info->info_main->pokemones,
 					 compara_nombres, nombre3);
+	if (!pokes[0] || !pokes[1] || !pokes[2])
+		return;
 	if (jugador == JUGADOR1) {
 		for (int i = 0; i < CANT_POKEMONES; i++) {
 			if (i != OPONENTE)
@@ -171,28 +173,27 @@ bool mostrar_ayuda1(void *contexto)
 {
 	const char *ayuda =
 		"\n>>>Para comenzar, deberas cargar un archivo a continuacion.\n"
-		"deberas hacerlo mediante su respectivo comando,\n"
-		"como toda accion en este juego(o casi toda)\n"
-		"los comandos actuales son :\n"
+		"Deberas hacerlo mediante su respectivo comando,\n"
+		"Como toda accion en este juego(o casi toda)\n"
+		"Los comandos actuales son:\n"
 		"'cargar'->para cargar archivo,\n"
 		"'ayuda'->para mostrar ayuda,\n"
-		"'salir'(sin las comillas)->para salir del juego\n"
-		"inserte comando,luego lo guiara la consola\n"
-		"un archivo valido es ejemplos/correcto.txt\n";
+		"'salir'->para salir del juego\n"
+		"Inserte comando,luego lo guiara la consola\n";
 	printf("%s\n", ayuda);
 	return true;
 }
 bool mostrar_ayuda2(void *contexto)
 {
 	const char *ayuda =
-		"\n>>>Ahora, deberas elegir tus pokemones(o algo asi,ya veras...).\n"
-		"deberas hacerlo mediante su respectivo comando,\n"
-		"el fomato para hacerlo es :Charmander Pikachu Larvitar\n"
-		"los comandos actuales son :\n"
+		"\n>>>Ahora, deberas 'elegir' tus pokemones(o algo asi,ya veras...).\n"
+		"Deberas hacerlo mediante su respectivo comando,\n"
+		"El fomato para hacerlo es :Charmander Pikachu Larvitar\n"
+		"Los comandos actuales son :\n"
 		"'elegir'->para seleccionar los 3 pokemones,\n"
 		"'listar'->para la lista de pokemones disponibles,\n"
 		"'ayuda'->para mostrar ayuda,\n"
-		"'salir'(sin las comillas)->para salir del juego\n";
+		"'salir'->para salir del juego\n";
 	printf("%s\n", ayuda);
 	return true;
 }
@@ -214,6 +215,8 @@ bool mostrar_ayuda3(void *contexto)
 
 void parsear_string(char *palabra)
 {
+	if (!palabra)
+		return;
 	if (palabra[0] != '\0') {
 		palabra[0] = (char)toupper(palabra[0]);
 		for (int i = 1; palabra[i] != '\0'; i++) {
@@ -374,6 +377,8 @@ void renovar_comandos(menu_t *menu, int nivel_nuevo)
 
 void cargar_comandos(menu_t *menu)
 {
+	if (!menu)
+		return;
 	menu_agregar_comando(menu, "cargar", "cargar archivo", cargar_archivo);
 	menu_agregar_comando(menu, "salir", "salir del juego", salir_juego);
 	menu_agregar_comando(menu, "ayuda", "mostrar ayuda", mostrar_ayuda1);
@@ -413,6 +418,8 @@ void mostrar_pokemones(struct info_juego *info)
 
 void informar_ganador(juego_t *juego)
 {
+	if (!juego)
+		return;
 	int puntaje1 = juego_obtener_puntaje(juego, JUGADOR1);
 	int puntaje2 = juego_obtener_puntaje(juego, JUGADOR2);
 	printf("Tu puntaje : %i, Puntaje adversario %i\n\n", puntaje1,
@@ -455,7 +462,7 @@ int main(int argc, char *argv[])
 		if (!info_main->usados[i])
 			fallo = true;
 	}
-	if (!juego || !menu || fallo) {
+	if (!juego || !menu || fallo || !pokes || !info_main) {
 		juego_destruir(juego);
 		menu_destruir(menu);
 		free(pokes);

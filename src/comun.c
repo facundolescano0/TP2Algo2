@@ -8,6 +8,8 @@
 
 int comparador_nombres(void *pokemon, void *nombre)
 {
+	if (!pokemon || !nombre)
+		return -1;
 	pokemon_t *poke = (pokemon_t *)pokemon;
 	const char *nombre_poke = (const char *)nombre;
 	return strcmp(pokemon_nombre(poke), nombre_poke);

@@ -34,6 +34,8 @@ adversario_t *adversario_crear(lista_t *pokemon)
 	if (!pokemon)
 		return NULL;
 	adversario_t *adversario = calloc(1, sizeof(adversario_t));
+	if (!adversario)
+		return NULL;
 	adversario->jugador = JUGADOR2;
 	bool fallo = false;
 	for (int i = 0; i < MAX_POKEMONES; i++) {
@@ -77,6 +79,8 @@ bool adversario_seleccionar_pokemon(adversario_t *adversario, char **nombre1,
 		lista_elemento_en_posicion(lista_poke, (size_t)aleatorio2);
 	pokemon_t *poke3 =
 		lista_elemento_en_posicion(lista_poke, (size_t)aleatorio3);
+	if (!poke1 || !poke2 || !poke3)
+		return false;
 	*nombre1 = (char *)pokemon_nombre(poke1);
 	*nombre2 = (char *)pokemon_nombre(poke2);
 	*nombre3 = (char *)pokemon_nombre(poke3);
@@ -100,6 +104,8 @@ bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
 		return false;
 
 	pokemon_t **pokemones = malloc(3 * sizeof(pokemon_t *));
+	if (!pokemones)
+		return false;
 	bool existen = seleccionar_pokemones(adversario->lista_poke, nombre1,
 					     nombre2, nombre3, pokemones);
 	if (!existen) {
@@ -119,6 +125,8 @@ bool adversario_pokemon_seleccionado(adversario_t *adversario, char *nombre1,
 
 void cargar_jugada(const struct ataque *ataque, void *iteradora)
 {
+	if (!ataque || !iteradora)
+		return;
 	struct iterar_ataques *herramientas =
 		(struct iterar_ataques *)iteradora;
 	struct ataque *ataque_actual = (struct ataque *)ataque;
@@ -141,6 +149,10 @@ jugada_t adversario_proxima_jugada(adversario_t *adversario)
 
 	struct iterar_ataques *iteradora =
 		malloc(sizeof(struct iterar_ataques));
+
+	if (!iteradora)
+		return jugada;
+
 	iteradora->jugada = jugada;
 	iteradora->jugada_lista = false;
 

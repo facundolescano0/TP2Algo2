@@ -37,6 +37,7 @@ juego_t *juego_crear()
 	if (!juego->jugador1 || !juego->jugador2 || !lista_poke) {
 		free(juego->jugador1);
 		free(juego->jugador2);
+		free(lista_poke);
 		free(juego);
 		return NULL;
 	}
@@ -83,6 +84,8 @@ JUEGO_ESTADO juego_cargar_pokemon(juego_t *juego, char *archivo)
 
 void listar_pokemon(pokemon_t *poke, void *lista)
 {
+	if (!poke || !lista)
+		return;
 	lista_t *lista_poke = (lista_t *)lista;
 	lista_insertar(lista_poke, poke);
 }
@@ -92,7 +95,11 @@ lista_t *juego_listar_pokemon(juego_t *juego)
 	if (!juego)
 		return NULL;
 	lista_t *lista_poke = juego->lista_poke;
-	con_cada_pokemon(juego->ip, listar_pokemon, lista_poke);
+	int iterados = con_cada_pokemon(juego->ip, listar_pokemon, lista_poke);
+	if (iterados != pokemon_cantidad(juego->ip)) {
+		return NULL;
+	}
+
 	juego->lista_poke = lista_poke;
 	return juego->lista_poke;
 }
@@ -108,6 +115,8 @@ JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
 		return POKEMON_REPETIDO;
 
 	pokemon_t **pokemones = malloc(3 * sizeof(pokemon_t *));
+	if (!pokemones)
+		return ERROR_GENERAL;
 	bool existen = seleccionar_pokemones(juego->lista_poke, nombre1,
 					     nombre2, nombre3, pokemones);
 	if (!existen) {
@@ -146,6 +155,8 @@ JUEGO_ESTADO juego_seleccionar_pokemon(juego_t *juego, JUGADOR jugador,
 int determinar_puntos(const struct ataque *ataque1,
 		      const struct ataque *ataque2)
 {
+	if (!ataque1 || !ataque2)
+		return 0;
 	enum TIPO tipo1 = ataque1->tipo;
 	enum TIPO tipo2 = ataque2->tipo;
 	int poder1 = (int)ataque1->poder;
@@ -208,6 +219,9 @@ resultado_jugada_t determinar_resultado(juego_t *juego,
 	resultado.jugador1 = ATAQUE_ERROR;
 	resultado.jugador2 = ATAQUE_ERROR;
 
+	if (!juego || !ataque1 || !ataque2)
+		return resultado;
+
 	int puntaje1 = determinar_puntos(ataque1, ataque2);
 	int puntaje2 = determinar_puntos(ataque2, ataque1);
 
@@ -226,6 +240,7 @@ resultado_jugada_t fallo_ataques(const struct ataque *ataque1,
 	resultado_jugada_t resultado;
 	resultado.jugador1 = ATAQUE_ERROR;
 	resultado.jugador2 = ATAQUE_ERROR;
+
 	if (!ataque1 && !ataque2)
 		return resultado;
 	if (!ataque1) {
