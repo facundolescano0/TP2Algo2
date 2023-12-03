@@ -393,7 +393,7 @@ void mostrar_ataque(const struct ataque *ataque, void *pokemon)
 	printf(">>%s, ataque: %s, poder: %u\n", poke, atq->nombre, atq->poder);
 }
 
-void mostrar_pokemones(struct info_juego *info)
+void mostrar_info_jugar(struct info_juego *info)
 {
 	if (!info)
 		return;
@@ -466,9 +466,9 @@ int main(int argc, char *argv[])
 		juego_destruir(juego);
 		menu_destruir(menu);
 		free(pokes);
-		free(info_main);
 		for (int i = 0; i < MAX_USADOS + 1; i++)
 			free(info_main->usados[i]);
+		free(info_main);
 
 		return -1;
 	}
@@ -493,12 +493,13 @@ int main(int argc, char *argv[])
 		if (nivel == 0)
 			printf("Debes 'cargar' un archivo para avanzar. Escribir 'ayuda' para obtener ayuda\n\n");
 		else if (nivel == 1)
-			printf("\nAhora debes 'elegir' tus pokemones para avanzar. Escribir 'ayuda' para obtener ayuda\n\n");
+			printf("\nAhora debes 'elegir' tus pokemones para avanzar. Escribir 'ayuda' para obtener ayuda\n"
+						"Observacion: no puedes elegir dos veces el mismo poke!\n\n");
 		else {
 			printf("\nA jugar! realiza tus jugadas con el comando 'jugar', recuerda que no puedes repetir ataques \n"
 			       "El formato para realizar un ataque es:Pikachu Rayo\n"
 			       "Escribir 'ayuda' para obtener ayuda\n\n");
-			mostrar_pokemones(&info);
+			mostrar_info_jugar(&info);
 		}
 
 		printf("COMANDO>  ");
