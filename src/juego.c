@@ -33,8 +33,8 @@ juego_t *juego_crear()
 
 	juego->jugador1 = calloc(1, sizeof(struct jugador));
 	juego->jugador2 = calloc(1, sizeof(struct jugador));
-	
-	if (!juego->jugador1 || !juego->jugador2){
+
+	if (!juego->jugador1 || !juego->jugador2) {
 		free(juego->jugador1);
 		free(juego->jugador2);
 		free(juego);
@@ -90,11 +90,11 @@ void listar_pokemon(pokemon_t *poke, void *lista)
 
 lista_t *juego_listar_pokemon(juego_t *juego)
 {
-	if (!juego)
+	if (!juego || !juego->ip)
 		return NULL;
-	
+
 	lista_t *lista_poke = lista_crear();
-	if(!lista_poke)
+	if (!lista_poke)
 		return NULL;
 	int iterados = con_cada_pokemon(juego->ip, listar_pokemon, lista_poke);
 	if (iterados != pokemon_cantidad(juego->ip)) {
