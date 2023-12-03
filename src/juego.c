@@ -33,11 +33,10 @@ juego_t *juego_crear()
 
 	juego->jugador1 = calloc(1, sizeof(struct jugador));
 	juego->jugador2 = calloc(1, sizeof(struct jugador));
-	lista_t *lista_poke = lista_crear();
-	if (!juego->jugador1 || !juego->jugador2 || !lista_poke) {
+	
+	if (!juego->jugador1 || !juego->jugador2){
 		free(juego->jugador1);
 		free(juego->jugador2);
-		free(lista_poke);
 		free(juego);
 		return NULL;
 	}
@@ -56,13 +55,12 @@ juego_t *juego_crear()
 			hash_destruir(
 				juego->jugador2->recursos[i].ataques_usados);
 		}
-		lista_destruir(lista_poke);
+
 		free(juego->jugador1);
 		free(juego->jugador2);
 		free(juego);
 		return NULL;
 	}
-	juego->lista_poke = lista_poke;
 
 	return juego;
 }
@@ -94,12 +92,15 @@ lista_t *juego_listar_pokemon(juego_t *juego)
 {
 	if (!juego)
 		return NULL;
-	lista_t *lista_poke = juego->lista_poke;
+	
+	lista_t *lista_poke = lista_crear();
+	if(!lista_poke)
+		return NULL;
 	int iterados = con_cada_pokemon(juego->ip, listar_pokemon, lista_poke);
 	if (iterados != pokemon_cantidad(juego->ip)) {
+		lista_destruir(lista_poke);
 		return NULL;
 	}
-
 	juego->lista_poke = lista_poke;
 	return juego->lista_poke;
 }
